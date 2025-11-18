@@ -7,12 +7,8 @@ export const useNotificationsUnread = () => {
     let active = true;
     const fetchCount = async () => {
       try {
-        const token =
-          localStorage.getItem("token") || localStorage.getItem("auth_token");
-        if (!token) return;
-        const res = await (
-          await import("@/lib/api")
-        ).api.get("notifications/unread-count", token);
+        const { api } = await import("@/lib/api");
+        const res = await api.get("notifications/unread-count");
         if (!res || !res.data || !res.data.data) return;
         if (active) setCount(Number(res.data.data.unread || 0));
       } catch (e) {
