@@ -4,7 +4,7 @@ export default function Agricultural() {
   return (
     <CategoryPage
       categoryName="Agricultural"
-      categorySlug="agriculturall"
+      categorySlug="agricultural"
       categoryIcon="🌾"
       categoryDescription="Agricultural land and farming properties in Rohtak"
     />
