@@ -29,6 +29,12 @@ import {
   upload,
 } from "./routes/properties";
 
+// Property category testing and fixing
+import {
+  testPropertyCategories,
+  fixPropertyCategories,
+} from "./routes/property-category-test";
+
 // Category routes (new system)
 import {
   getCategories,
