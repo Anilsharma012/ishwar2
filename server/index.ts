@@ -29,6 +29,12 @@ import {
   upload,
 } from "./routes/properties";
 
+// Property category testing and fixing
+import {
+  testPropertyCategories,
+  fixPropertyCategories,
+} from "./routes/property-category-test";
+
 // Category routes (new system)
 import {
   getCategories,
@@ -194,7 +200,11 @@ import {
 import { handleDemo } from "./routes/demo";
 import { seedDatabase } from "./routes/seed";
 import { replyAsOwner } from "./routes/dev-chat";
-import { initializeSystem, debugCategories, reinitializeCategories } from "./routes/init";
+import {
+  initializeSystem,
+  debugCategories,
+  reinitializeCategories,
+} from "./routes/init";
 import {
   getAdminSettings,
   updateAdminSettings,
@@ -883,6 +893,20 @@ export function createServer() {
     authenticateToken,
     requireAdmin,
     updatePropertyApproval,
+  );
+
+  // Property category testing and fixing routes
+  app.get(
+    "/api/admin/test-property-categories",
+    authenticateToken,
+    requireAdmin,
+    testPropertyCategories,
+  );
+  app.post(
+    "/api/admin/fix-property-categories",
+    authenticateToken,
+    requireAdmin,
+    fixPropertyCategories,
   );
 
   // PUBLIC Category routes

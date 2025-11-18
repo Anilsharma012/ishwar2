@@ -167,6 +167,13 @@ export const getProperties: RequestHandler = async (req, res) => {
         break;
     }
 
+    console.log("🔍 FILTER PROPERTIES → query", {
+      category,
+      propertyType,
+      subCategory: norm(subCategory),
+      filter: JSON.stringify(filter, null, 2),
+    });
+
     // --- 4) Sub-category and other filters ---
     if (subCategory) filter.subCategory = norm(subCategory);
     if (priceType)   filter.priceType   = norm(priceType);
@@ -321,6 +328,38 @@ export const createProperty: RequestHandler = async (req, res) => {
     const approvalStatus: "pending" | "pending_approval" = packageId ? "pending_approval" : "pending";
     const status: "inactive" | "active" = "inactive"; // 🔒 NEVER live at creation
 
+    // Map UI aliases to canonical DB values (same as query-time mapping)
+    const TYPE_ALIASES: Record<string, string> = {
+      // PG / Co-living
+      "co-living": "pg",
+      "coliving": "pg",
+      "pg": "pg",
+
+      // Agricultural
+      "agricultural-land": "agricultural",
+      "agri": "agricultural",
+      "agricultural": "agricultural",
+
+      // Commercial family
+      "commercial": "commercial",
+      "showroom": "commercial",
+      "office": "commercial",
+
+      // Residential family
+      "residential": "residential",
+      "flat": "flat",
+      "apartment": "flat",
+
+      // Plot
+      "plot": "plot",
+    };
+
+    // Normalize propertyType using TYPE_ALIASES (same as query time)
+    let normalizedPropertyType = normSlug(req.body.propertyType);
+    if (TYPE_ALIASES[normalizedPropertyType]) {
+      normalizedPropertyType = TYPE_ALIASES[normalizedPropertyType];
+    }
+
     const propertyData: Omit<Property, "_id"> & {
       packageId?: string;
       isApproved?: boolean;
@@ -337,7 +376,7 @@ export const createProperty: RequestHandler = async (req, res) => {
       description: req.body.description,
       price: toInt(req.body.price) ?? 0,
       priceType: req.body.priceType,
-      propertyType: normSlug(req.body.propertyType),
+      propertyType: normalizedPropertyType,
       subCategory: normSlug(req.body.subCategory),
       location,
       specifications: {
@@ -381,6 +420,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     };
 
     console.log("📥 CREATE PROPERTY → enforced", {
+      title: propertyData.title,
+      propertyType: propertyData.propertyType,
+      subCategory: propertyData.subCategory,
       status: propertyData.status,
       approvalStatus: propertyData.approvalStatus,
       isApproved: propertyData.isApproved,
