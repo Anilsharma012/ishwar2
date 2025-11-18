@@ -123,8 +123,13 @@ export default function CategoryProperties() {
     }
   }, [showFilters]);
 
-  // Get category from URL path
+  // Get category from URL path or query params
   const getCurrentCategory = () => {
+    // First check query params (passed by subcategory pages like /buy/:slug?category=buy)
+    const catFromQuery = searchParams.get("category");
+    if (catFromQuery) return catFromQuery;
+
+    // Fallback to path-based detection
     const path = window.location.pathname;
     if (path.startsWith("/buy/")) return "buy";
     if (path.startsWith("/sale/")) return "sale";
