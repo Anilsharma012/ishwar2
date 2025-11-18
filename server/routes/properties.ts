@@ -562,8 +562,18 @@ export const getUserNotifications: RequestHandler = async (req, res) => {
         .toArray();
     }
 
+    // Add source field to indicate which collection each notification came from
+    const userNotifsWithSource = userNotifications.map((n) => ({
+      ...n,
+      _notificationSource: "user_notifications",
+    }));
+    const sellerNotifsWithSource = sellerNotifications.map((n) => ({
+      ...n,
+      _notificationSource: "notifications",
+    }));
+
     // Merge and sort by creation date
-    const allNotifications = [...userNotifications, ...sellerNotifications].sort(
+    const allNotifications = [...userNotifsWithSource, ...sellerNotifsWithSource].sort(
       (a, b) =>
         new Date(b.createdAt || b.sentAt).getTime() -
         new Date(a.createdAt || a.sentAt).getTime()
