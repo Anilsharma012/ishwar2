@@ -179,7 +179,11 @@ export default function CategoryProperties() {
     if (catLower === "buy" || catLower === "sale") {
       // Slug could be specific property type or a subcategory
       // Check if it's a known property type first
-      if (["residential", "plot", "commercial", "agricultural"].includes(slugLower)) {
+      if (
+        ["residential", "plot", "commercial", "agricultural"].includes(
+          slugLower,
+        )
+      ) {
         return { propertyType: slugLower };
       }
       // Otherwise, treat as a subcategory of residential (1bhk, 2bhk, etc.)

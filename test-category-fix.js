@@ -63,7 +63,7 @@ const testScenarios = [
 
 async function runTests() {
   console.log("🧪 TESTING CATEGORY & SUBCATEGORY FIX\n");
-  console.log("=" .repeat(60));
+  console.log("=".repeat(60));
 
   let passedTests = 0;
   let totalTests = testScenarios.length;
@@ -85,17 +85,19 @@ async function runTests() {
         passedTests++;
       } else {
         console.log(
-          `   ❌ Page failed to load (HTTP ${response.status}): ${response.statusText}`
+          `   ❌ Page failed to load (HTTP ${response.status}): ${response.statusText}`,
         );
       }
 
       // Test 2: Verify API endpoint exists (basic check)
       const apiUrl = `${BASE_URL}/api/properties?${new URLSearchParams(
-        scenario.expectedApiParams
+        scenario.expectedApiParams,
       ).toString()}`;
       console.log(`   📡 API URL: ${apiUrl}`);
 
-      const apiResponse = await fetch(apiUrl, { headers: { Accept: "application/json" } });
+      const apiResponse = await fetch(apiUrl, {
+        headers: { Accept: "application/json" },
+      });
       const apiData = await apiResponse.json();
 
       if (apiData.success !== false) {
@@ -108,7 +110,7 @@ async function runTests() {
     }
   }
 
-  console.log("\n" + "=" .repeat(60));
+  console.log("\n" + "=".repeat(60));
   console.log(`\n📊 TEST SUMMARY: ${passedTests}/${totalTests} tests passed`);
 
   // Code quality checks
@@ -196,7 +198,7 @@ async function runTests() {
     console.log(`   Expected: ${test.expectedBehavior}`);
   });
 
-  console.log("\n" + "=" .repeat(60));
+  console.log("\n" + "=".repeat(60));
   console.log("\n✨ TESTING COMPLETE\n");
 }
 
