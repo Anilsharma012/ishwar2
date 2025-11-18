@@ -93,10 +93,7 @@ export const getCategories: RequestHandler = async (req, res) => {
     const filter: any = {};
     if (active === "true") {
       // Support both active and isActive fields
-      filter.$or = [
-        { isActive: true },
-        { active: true }
-      ];
+      filter.$or = [{ isActive: true }, { active: true }];
     }
 
     // Get categories sorted by sortOrder
@@ -162,9 +159,7 @@ export const getCategoryBySlug: RequestHandler = async (req, res) => {
     console.log("🔍 Looking for category with slug:", slug);
 
     // Simply query by slug, no active filter (to avoid missing categories)
-    let category = await db
-      .collection("categories")
-      .findOne({ slug });
+    let category = await db.collection("categories").findOne({ slug });
 
     if (!category) {
       console.log("❌ Category not found with slug:", slug);
@@ -209,14 +204,46 @@ export const getCategoryBySlug: RequestHandler = async (req, res) => {
           active: true,
           isActive: true,
           subcategories: [
-            { name: "Agricultural Land", slug: "agricultural-land", description: "Farmland and agricultural plots" },
-            { name: "Farmhouse with Land", slug: "farmhouse-with-land", description: "Farmhouse with land" },
-            { name: "Orchard/Plantation", slug: "orchard-plantation", description: "Orchard and plantation land" },
-            { name: "Dairy Farm", slug: "dairy-farm", description: "Dairy farming land" },
-            { name: "Poultry Farm", slug: "poultry-farm", description: "Poultry farming land" },
-            { name: "Fish/Prawn Farm", slug: "fish-farm-pond", description: "Fish and prawn farming ponds" },
-            { name: "Polyhouse/Greenhouse", slug: "polyhouse-greenhouse", description: "Polyhouse and greenhouse structures" },
-            { name: "Pasture/Grazing Land", slug: "pasture-grazing", description: "Pasture and grazing land" },
+            {
+              name: "Agricultural Land",
+              slug: "agricultural-land",
+              description: "Farmland and agricultural plots",
+            },
+            {
+              name: "Farmhouse with Land",
+              slug: "farmhouse-with-land",
+              description: "Farmhouse with land",
+            },
+            {
+              name: "Orchard/Plantation",
+              slug: "orchard-plantation",
+              description: "Orchard and plantation land",
+            },
+            {
+              name: "Dairy Farm",
+              slug: "dairy-farm",
+              description: "Dairy farming land",
+            },
+            {
+              name: "Poultry Farm",
+              slug: "poultry-farm",
+              description: "Poultry farming land",
+            },
+            {
+              name: "Fish/Prawn Farm",
+              slug: "fish-farm-pond",
+              description: "Fish and prawn farming ponds",
+            },
+            {
+              name: "Polyhouse/Greenhouse",
+              slug: "polyhouse-greenhouse",
+              description: "Polyhouse and greenhouse structures",
+            },
+            {
+              name: "Pasture/Grazing Land",
+              slug: "pasture-grazing",
+              description: "Pasture and grazing land",
+            },
           ],
         },
       };
@@ -242,8 +269,14 @@ export const getCategoryBySlug: RequestHandler = async (req, res) => {
     let subcategories = [];
 
     // First, try embedded subcategories in the category document
-    if (Array.isArray(category.subcategories) && category.subcategories.length > 0) {
-      console.log("✅ Found embedded subcategories:", category.subcategories.length);
+    if (
+      Array.isArray(category.subcategories) &&
+      category.subcategories.length > 0
+    ) {
+      console.log(
+        "✅ Found embedded subcategories:",
+        category.subcategories.length,
+      );
       subcategories = category.subcategories;
     } else {
       // Fallback to separate subcategories collection
