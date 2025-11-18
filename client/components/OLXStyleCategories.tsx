@@ -59,12 +59,12 @@ const ROUTE_OVERRIDES: Record<string, string> = {
   "new-projects": "/new-projects",
   maps: "/maps",
   buy: "/buy",
- 
+
   sell: "/post-property",
   rent: "/rent",
   lease: "/lease",
   "co-living": "/co-living",
-
+  agricultural: "/agricultural",
   commercial: "/commercial",
   "other-services": "/other-services/other-services",
 };
