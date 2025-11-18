@@ -167,6 +167,13 @@ export const getProperties: RequestHandler = async (req, res) => {
         break;
     }
 
+    console.log("🔍 FILTER PROPERTIES → query", {
+      category,
+      propertyType,
+      subCategory: norm(subCategory),
+      filter: JSON.stringify(filter, null, 2),
+    });
+
     // --- 4) Sub-category and other filters ---
     if (subCategory) filter.subCategory = norm(subCategory);
     if (priceType)   filter.priceType   = norm(priceType);
