@@ -167,6 +167,7 @@ function App() {
                   <Route path="/co-living" element={<CoLiving />} />
                   <Route path="/pg-co-living" element={<PGCoLiving />} />
                   <Route path="/pgco-living" element={<PGCoLiving />} />
+                  <Route path="/agricultural" element={<Agricultural />} />
                   <Route path="/agriculturall" element={<Agricultural />} />
                   <Route path="/services" element={<Services />} />
                   <Route path="/other-services" element={<OtherServices />} />

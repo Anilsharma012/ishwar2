@@ -106,7 +106,8 @@ export default function CategoryPage({
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
     // Navigate to category properties with both category and subcategory
-    navigate(`/categories/${categorySlug}/${subcategory.slug}`, {
+    // Use the new route format for proper path routing
+    navigate(`/${categorySlug}/${subcategory.slug}`, {
       state: { category: categoryName, subcategory: subcategory.name },
     });
   };
