@@ -150,7 +150,7 @@ export default function PG() {
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    navigate(`/pg/${subcategory.slug}`);
+    navigate(`/pg/${subcategory.slug}?category=pg`);
   };
 
   if (loading) {
