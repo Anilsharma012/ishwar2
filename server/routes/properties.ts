@@ -17,12 +17,16 @@ import {
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     const uploadPath = path.join(process.cwd(), "uploads", "properties");
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
+    if (!fs.existsSync(uploadPath))
+      fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
   filename: (_req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    cb(
+      null,
+      `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`,
+    );
   },
 });
 
@@ -46,14 +50,16 @@ const toInt = (v: any): number | undefined => {
 // Slug synonyms so PG/Co-living etc. work across seeds & UI
 const CAT_SYNONYMS: Record<string, string[]> = {
   "co-living": ["co-living", "coliving", "pg-co-living", "pg"],
-  "pg": ["pg", "pg-hostel", "pg/hostel", "pg-co-living", "co-living"],
+  pg: ["pg", "pg-hostel", "pg/hostel", "pg-co-living", "co-living"],
   // add more if needed:
   // "buy": ["buy"],
   // "rent": ["rent"],
 };
 
 function normSlug(v: any): string {
-  return String(v || "").trim().toLowerCase();
+  return String(v || "")
+    .trim()
+    .toLowerCase();
 }
 
 function expandCategory(cat: string): string[] {
@@ -95,7 +101,10 @@ export const getProperties: RequestHandler = async (req, res) => {
     } = req.query;
 
     // --- 1) Normalize slugs/aliases coming from UI ---
-    const norm = (v?: any) => String(v ?? "").trim().toLowerCase();
+    const norm = (v?: any) =>
+      String(v ?? "")
+        .trim()
+        .toLowerCase();
     const category = norm(qCategory);
     let propertyType = norm(qPropertyType);
 
@@ -103,26 +112,26 @@ export const getProperties: RequestHandler = async (req, res) => {
     const TYPE_ALIASES: Record<string, string> = {
       // PG / Co-living
       "co-living": "pg",
-      "coliving": "pg",
-      "pg": "pg",
+      coliving: "pg",
+      pg: "pg",
 
       // Agricultural
       "agricultural-land": "agricultural",
-      "agri": "agricultural",
-      "agricultural": "agricultural",
+      agri: "agricultural",
+      agricultural: "agricultural",
 
       // Commercial family
-      "commercial": "commercial",
-      "showroom": "commercial",      // sometimes treated as category in UI
-      "office": "commercial",
+      commercial: "commercial",
+      showroom: "commercial", // sometimes treated as category in UI
+      office: "commercial",
 
       // Residential family
-      "residential": "residential",
-      "flat": "flat",                 // you use a separate "flat" type in DB
-      "apartment": "flat",            // alias just in case
+      residential: "residential",
+      flat: "flat", // you use a separate "flat" type in DB
+      apartment: "flat", // alias just in case
 
       // Plot
-      "plot": "plot",
+      plot: "plot",
     };
 
     // If page passed only `category`, derive propertyType from it
@@ -137,7 +146,10 @@ export const getProperties: RequestHandler = async (req, res) => {
     // --- 2) Base moderation filter (public) ---
     const filter: any = {
       status: "active",
-      $or: [{ approvalStatus: "approved" }, { approvalStatus: { $exists: false } }],
+      $or: [
+        { approvalStatus: "approved" },
+        { approvalStatus: { $exists: false } },
+      ],
     };
 
     // --- 3) “Buy/Rent” top tabs logic (broad groupings) ---
@@ -148,15 +160,15 @@ export const getProperties: RequestHandler = async (req, res) => {
         // show sale listings in residential AND plot
         filter.$or = [
           { propertyType: "residential", priceType: "sale" },
-          { propertyType: "plot",        priceType: "sale" },
-          { propertyType: "flat",        priceType: "sale" }, // include flats when buying
+          { propertyType: "plot", priceType: "sale" },
+          { propertyType: "flat", priceType: "sale" }, // include flats when buying
         ];
         break;
       case "rent":
         filter.$or = [
           { propertyType: "residential", priceType: "rent" },
-          { propertyType: "flat",        priceType: "rent" },
-          { propertyType: "commercial",  priceType: "rent" }, // many want commercial rentals too
+          { propertyType: "flat", priceType: "rent" },
+          { propertyType: "commercial", priceType: "rent" }, // many want commercial rentals too
         ];
         break;
       default:
@@ -176,10 +188,10 @@ export const getProperties: RequestHandler = async (req, res) => {
 
     // --- 4) Sub-category and other filters ---
     if (subCategory) filter.subCategory = norm(subCategory);
-    if (priceType)   filter.priceType   = norm(priceType);
-    if (sector)      filter["location.sector"]   = norm(sector);
-    if (mohalla)     filter["location.mohalla"]  = norm(mohalla);
-    if (landmark)    filter["location.landmark"] = norm(landmark);
+    if (priceType) filter.priceType = norm(priceType);
+    if (sector) filter["location.sector"] = norm(sector);
+    if (mohalla) filter["location.mohalla"] = norm(mohalla);
+    if (landmark) filter["location.landmark"] = norm(landmark);
 
     if (bedrooms) {
       const b = String(bedrooms);
@@ -200,26 +212,42 @@ export const getProperties: RequestHandler = async (req, res) => {
     }
     if (minArea || maxArea) {
       filter["specifications.area"] = {};
-      if (minArea) filter["specifications.area"].$gte = parseInt(String(minArea), 10);
-      if (maxArea) filter["specifications.area"].$lte = parseInt(String(maxArea), 10);
+      if (minArea)
+        filter["specifications.area"].$gte = parseInt(String(minArea), 10);
+      if (maxArea)
+        filter["specifications.area"].$lte = parseInt(String(maxArea), 10);
     }
 
     // --- 5) Sorting / Pagination unchanged ---
     const sort: any = {};
     switch (sortBy) {
-      case "price_asc":  sort.price = 1; break;
-      case "price_desc": sort.price = -1; break;
-      case "area_desc":  sort["specifications.area"] = -1; break;
-      case "date_asc":   sort.createdAt = 1; break;
-      default:           sort.createdAt = -1;
+      case "price_asc":
+        sort.price = 1;
+        break;
+      case "price_desc":
+        sort.price = -1;
+        break;
+      case "area_desc":
+        sort["specifications.area"] = -1;
+        break;
+      case "date_asc":
+        sort.createdAt = 1;
+        break;
+      default:
+        sort.createdAt = -1;
     }
 
-    const pageNum  = parseInt(String(page), 10);
+    const pageNum = parseInt(String(page), 10);
     const limitNum = parseInt(String(limit), 10);
-    const skip     = (pageNum - 1) * limitNum;
+    const skip = (pageNum - 1) * limitNum;
 
-    const properties = await db.collection("properties")
-      .find(filter).sort(sort).skip(skip).limit(limitNum).toArray();
+    const properties = await db
+      .collection("properties")
+      .find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNum)
+      .toArray();
 
     const total = await db.collection("properties").countDocuments(filter);
 
@@ -227,20 +255,29 @@ export const getProperties: RequestHandler = async (req, res) => {
       success: true,
       data: {
         properties: properties as unknown as Property[],
-        pagination: { page: pageNum, limit: limitNum, total, pages: Math.ceil(total / limitNum) },
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          pages: Math.ceil(total / limitNum),
+        },
       },
     });
   } catch (error) {
     console.error("Error fetching properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch properties" });
   }
 };
-
 
 /* =========================================================================
    PUBLIC: Category page with path params (/categories/:category/:sub?)
    ========================================================================= */
-export const listPublicPropertiesByCategory: RequestHandler = async (req, res) => {
+export const listPublicPropertiesByCategory: RequestHandler = async (
+  req,
+  res,
+) => {
   try {
     // Reuse getProperties logic by mapping params → query and calling same code path
     req.query = {
@@ -252,7 +289,9 @@ export const listPublicPropertiesByCategory: RequestHandler = async (req, res) =
     return getProperties(req, res);
   } catch (err) {
     console.error("listPublicPropertiesByCategory error:", err);
-    return res.status(500).json({ success: false, error: "Failed to list properties" });
+    return res
+      .status(500)
+      .json({ success: false, error: "Failed to list properties" });
   }
 };
 
@@ -264,15 +303,26 @@ export const getPropertyById: RequestHandler = async (req, res) => {
     const db = getDatabase();
     const { id } = req.params;
     if (!ObjectId.isValid(id))
-      return res.status(400).json({ success: false, error: "Invalid property ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
 
-    const property = await db.collection("properties").findOne({ _id: new ObjectId(id) });
+    const property = await db
+      .collection("properties")
+      .findOne({ _id: new ObjectId(id) });
     if (!property)
-      return res.status(404).json({ success: false, error: "Property not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
-    await db.collection("properties").updateOne({ _id: new ObjectId(id) }, { $inc: { views: 1 } });
+    await db
+      .collection("properties")
+      .updateOne({ _id: new ObjectId(id) }, { $inc: { views: 1 } });
 
-    const response: ApiResponse<Property> = { success: true, data: property as unknown as Property };
+    const response: ApiResponse<Property> = {
+      success: true,
+      data: property as unknown as Property,
+    };
     res.json(response);
   } catch (error) {
     console.error("Error fetching property:", error);
@@ -287,7 +337,10 @@ export const createProperty: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
 
     // images
     const images: string[] = [];
@@ -325,33 +378,35 @@ export const createProperty: RequestHandler = async (req, res) => {
         : undefined;
 
     // moderation defaults
-    const approvalStatus: "pending" | "pending_approval" = packageId ? "pending_approval" : "pending";
+    const approvalStatus: "pending" | "pending_approval" = packageId
+      ? "pending_approval"
+      : "pending";
     const status: "inactive" | "active" = "inactive"; // 🔒 NEVER live at creation
 
     // Map UI aliases to canonical DB values (same as query-time mapping)
     const TYPE_ALIASES: Record<string, string> = {
       // PG / Co-living
       "co-living": "pg",
-      "coliving": "pg",
-      "pg": "pg",
+      coliving: "pg",
+      pg: "pg",
 
       // Agricultural
       "agricultural-land": "agricultural",
-      "agri": "agricultural",
-      "agricultural": "agricultural",
+      agri: "agricultural",
+      agricultural: "agricultural",
 
       // Commercial family
-      "commercial": "commercial",
-      "showroom": "commercial",
-      "office": "commercial",
+      commercial: "commercial",
+      showroom: "commercial",
+      office: "commercial",
 
       // Residential family
-      "residential": "residential",
-      "flat": "flat",
-      "apartment": "flat",
+      residential: "residential",
+      flat: "flat",
+      apartment: "flat",
 
       // Plot
-      "plot": "plot",
+      plot: "plot",
     };
 
     // Normalize propertyType using TYPE_ALIASES (same as query time)
@@ -431,18 +486,26 @@ export const createProperty: RequestHandler = async (req, res) => {
     });
 
     // Free post limit enforcement (default: 5 free posts per 30 days)
-    const FREE_POST_LIMIT = process.env.FREE_POST_LIMIT ? Number(process.env.FREE_POST_LIMIT) : 5;
+    const FREE_POST_LIMIT = process.env.FREE_POST_LIMIT
+      ? Number(process.env.FREE_POST_LIMIT)
+      : 5;
     const FREE_POST_PERIOD_DAYS = process.env.FREE_POST_PERIOD_DAYS
       ? Number(process.env.FREE_POST_PERIOD_DAYS)
       : 30;
 
     if (!propertyData.packageId) {
-      const periodStart = new Date(Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000);
+      const periodStart = new Date(
+        Date.now() - FREE_POST_PERIOD_DAYS * 24 * 60 * 60 * 1000,
+      );
       const userIdStr = String(userId);
       const freePostsCount = await db.collection("properties").countDocuments({
         ownerId: userIdStr,
         createdAt: { $gte: periodStart },
-        $or: [{ packageId: { $exists: false } }, { packageId: null }, { isPaid: false }],
+        $or: [
+          { packageId: { $exists: false } },
+          { packageId: null },
+          { isPaid: false },
+        ],
       });
 
       if (freePostsCount >= FREE_POST_LIMIT) {
@@ -458,7 +521,9 @@ export const createProperty: RequestHandler = async (req, res) => {
 
     // confirmation email (best-effort)
     try {
-      const user = await db.collection("users").findOne({ _id: new ObjectId(String(userId)) });
+      const user = await db
+        .collection("users")
+        .findOne({ _id: new ObjectId(String(userId)) });
       if (user?.email) {
         await sendPropertyConfirmationEmail(
           user.email,
@@ -468,7 +533,10 @@ export const createProperty: RequestHandler = async (req, res) => {
         );
       }
     } catch (e) {
-      console.warn("Property confirmation email failed:", (e as any)?.message || e);
+      console.warn(
+        "Property confirmation email failed:",
+        (e as any)?.message || e,
+      );
     }
 
     const response: ApiResponse<{ _id: string }> = {
@@ -480,7 +548,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     res.status(201).json(response);
   } catch (error) {
     console.error("Error creating property:", error);
-    res.status(500).json({ success: false, error: "Failed to create property" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to create property" });
   }
 };
 
@@ -504,7 +574,9 @@ export const getFeaturedProperties: RequestHandler = async (_req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching featured properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch featured properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch featured properties" });
   }
 };
 
@@ -515,7 +587,10 @@ export const getUserProperties: RequestHandler = async (req, res) => {
   try {
     const db = getDatabase();
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ success: false, error: "User not authenticated" });
+    if (!userId)
+      return res
+        .status(401)
+        .json({ success: false, error: "User not authenticated" });
 
     const properties = await db
       .collection("properties")
@@ -530,7 +605,9 @@ export const getUserProperties: RequestHandler = async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching user properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch user properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch user properties" });
   }
 };
 
@@ -573,16 +650,21 @@ export const getUserNotifications: RequestHandler = async (req, res) => {
     }));
 
     // Merge and sort by creation date
-    const allNotifications = [...userNotifsWithSource, ...sellerNotifsWithSource].sort(
+    const allNotifications = [
+      ...userNotifsWithSource,
+      ...sellerNotifsWithSource,
+    ].sort(
       (a, b) =>
         new Date(b.createdAt || b.sentAt).getTime() -
-        new Date(a.createdAt || a.sentAt).getTime()
+        new Date(a.createdAt || a.sentAt).getTime(),
     );
 
     res.json({ success: true, data: allNotifications });
   } catch (error) {
     console.error("Error fetching user notifications:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch notifications" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch notifications" });
   }
 };
 
@@ -593,7 +675,9 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
     const db = getDatabase();
 
     if (!ObjectId.isValid(String(notificationId))) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
     await db.collection("user_notifications").updateOne(
@@ -607,7 +691,9 @@ export const markUserNotificationAsRead: RequestHandler = async (req, res) => {
     res.json({ success: true, message: "Notification marked as read" });
   } catch (error) {
     console.error("Error marking notification as read:", error);
-    res.status(500).json({ success: false, error: "Failed to mark notification as read" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to mark notification as read" });
   }
 };
 
@@ -618,7 +704,9 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
     const db = getDatabase();
 
     if (!ObjectId.isValid(String(notificationId))) {
-      return res.status(400).json({ success: false, error: "Invalid notification ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid notification ID" });
     }
 
     await db.collection("user_notifications").deleteOne({
@@ -629,7 +717,9 @@ export const deleteUserNotification: RequestHandler = async (req, res) => {
     res.json({ success: true, message: "Notification deleted" });
   } catch (error) {
     console.error("Error deleting notification:", error);
-    res.status(500).json({ success: false, error: "Failed to delete notification" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to delete notification" });
   }
 };
 
@@ -652,7 +742,9 @@ export const getPendingProperties: RequestHandler = async (_req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching pending properties:", error);
-    res.status(500).json({ success: false, error: "Failed to fetch pending properties" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to fetch pending properties" });
   }
 };
 
@@ -671,15 +763,22 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     const adminId = (req as any).userId;
 
     if (!ObjectId.isValid(String(id))) {
-      return res.status(400).json({ success: false, error: "Invalid property ID" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid property ID" });
     }
     if (!["approved", "rejected"].includes(String(approvalStatus))) {
-      return res.status(400).json({ success: false, error: "Invalid approval status" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid approval status" });
     }
 
     const _id = new ObjectId(String(id));
     const property = await db.collection("properties").findOne({ _id });
-    if (!property) return res.status(404).json({ success: false, error: "Property not found" });
+    if (!property)
+      return res
+        .status(404)
+        .json({ success: false, error: "Property not found" });
 
     const now = new Date();
     const updateData: any = { approvalStatus, updatedAt: now };
@@ -701,9 +800,15 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     // best-effort email
     try {
       if (approvalStatus === "approved") {
-        const owner = await db.collection("users").findOne({ _id: new ObjectId(property.ownerId) });
+        const owner = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(property.ownerId) });
         if (owner?.email) {
-          await sendPropertyApprovalEmail(owner.email, owner.name || "User", property.title);
+          await sendPropertyApprovalEmail(
+            owner.email,
+            owner.name || "User",
+            property.title,
+          );
         }
       }
     } catch (e) {
@@ -717,6 +822,8 @@ export const updatePropertyApproval: RequestHandler = async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error updating property approval:", error);
-    res.status(500).json({ success: false, error: "Failed to update property approval" });
+    res
+      .status(500)
+      .json({ success: false, error: "Failed to update property approval" });
   }
 };

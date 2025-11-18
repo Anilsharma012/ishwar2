@@ -56,7 +56,9 @@ export default function Notifications() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setItems((prev) =>
-        prev.map((n) => (n._id === notif._id ? { ...n, isRead: true, read: true } : n)),
+        prev.map((n) =>
+          n._id === notif._id ? { ...n, isRead: true, read: true } : n,
+        ),
       );
     } catch {}
   };
