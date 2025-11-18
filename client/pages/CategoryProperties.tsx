@@ -198,7 +198,7 @@ export default function CategoryProperties() {
       return { propertyType: "residential", subCategory: slugLower };
     }
 
-    if (catLower === "pg") {
+    if (catLower === "pg" || catLower === "co-living" || catLower === "coliving") {
       return { propertyType: "pg", subCategory: slugLower };
     }
 
