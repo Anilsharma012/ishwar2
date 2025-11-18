@@ -7,8 +7,11 @@ interface UserNotification {
   _id: string;
   title: string;
   message: string;
-  createdAt: string;
+  createdAt?: string;
+  sentAt?: string;
   isRead?: boolean;
+  read?: boolean;
+  _notificationSource?: "user_notifications" | "notifications";
 }
 
 export default function Notifications() {
@@ -40,27 +43,39 @@ export default function Notifications() {
     fetchNotifications();
   }, []);
 
-  const markRead = async (id: string) => {
+  const markRead = async (notif: UserNotification) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/user/notifications/${id}/read`, {
+      const isSellerNotif = notif._notificationSource === "notifications";
+      const endpoint = isSellerNotif
+        ? `/api/seller/notifications/${notif._id}/read`
+        : `/api/user/notifications/${notif._id}/read`;
+
+      await fetch(endpoint, {
         method: "PUT",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setItems((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
+        prev.map((n) =>
+          n._id === notif._id ? { ...n, isRead: true, read: true } : n,
+        ),
       );
     } catch {}
   };
 
-  const remove = async (id: string) => {
+  const remove = async (notif: UserNotification) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/user/notifications/${id}`, {
+      const isSellerNotif = notif._notificationSource === "notifications";
+      const endpoint = isSellerNotif
+        ? `/api/seller/notifications/${notif._id}`
+        : `/api/user/notifications/${notif._id}`;
+
+      await fetch(endpoint, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      setItems((prev) => prev.filter((n) => n._id !== id));
+      setItems((prev) => prev.filter((n) => n._id !== notif._id));
     } catch {}
   };
 
@@ -84,7 +99,7 @@ export default function Notifications() {
             {items.map((n) => (
               <div
                 key={n._id}
-                className={`bg-white border rounded-lg p-4 flex items-start justify-between ${n.isRead ? "" : "border-[#C70000]"}`}
+                className={`bg-white border rounded-lg p-4 flex items-start justify-between ${n.isRead || n.read ? "" : "border-[#C70000]"}`}
               >
                 <div>
                   <h3 className="font-medium text-gray-900">
@@ -92,13 +107,13 @@ export default function Notifications() {
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">{n.message}</p>
                   <div className="text-xs text-gray-400 mt-2">
-                    {new Date(n.createdAt).toLocaleString()}
+                    {new Date(n.createdAt || n.sentAt || "").toLocaleString()}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {!n.isRead && (
+                  {!n.isRead && !n.read && (
                     <button
-                      onClick={() => markRead(n._id)}
+                      onClick={() => markRead(n)}
                       className="p-2 rounded hover:bg-gray-100"
                       aria-label="Mark as read"
                     >
@@ -106,7 +121,7 @@ export default function Notifications() {
                     </button>
                   )}
                   <button
-                    onClick={() => remove(n._id)}
+                    onClick={() => remove(n)}
                     className="p-2 rounded hover:bg-gray-100"
                     aria-label="Delete"
                   >

@@ -5,14 +5,29 @@ export const useNotificationsUnread = () => {
 
   useEffect(() => {
     let active = true;
-    const fetchCount = async () => {
+
+    // Check if user has a token before attempting to fetch
+    const hasToken = () => {
       try {
-        const token =
-          localStorage.getItem("token") || localStorage.getItem("auth_token");
-        if (!token) return;
-        const res = await (
-          await import("@/lib/api")
-        ).api.get("notifications/unread-count", token);
+        return !!(
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("userToken") ||
+          localStorage.getItem("adminToken")
+        );
+      } catch {
+        return false;
+      }
+    };
+
+    const fetchCount = async () => {
+      // Don't fetch if user is not authenticated
+      if (!hasToken()) return;
+
+      try {
+        const { api } = await import("@/lib/api");
+        const res = await api.get("notifications/unread-count");
         if (!res || !res.data || !res.data.data) return;
         if (active) setCount(Number(res.data.data.unread || 0));
       } catch (e) {
