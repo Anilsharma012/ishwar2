@@ -123,8 +123,13 @@ export default function CategoryProperties() {
     }
   }, [showFilters]);
 
-  // Get category from URL path
+  // Get category from URL path or query params
   const getCurrentCategory = () => {
+    // First check query params (passed by subcategory pages like /buy/:slug?category=buy)
+    const catFromQuery = searchParams.get("category");
+    if (catFromQuery) return catFromQuery;
+
+    // Fallback to path-based detection
     const path = window.location.pathname;
     if (path.startsWith("/buy/")) return "buy";
     if (path.startsWith("/sale/")) return "sale";
@@ -167,8 +172,45 @@ export default function CategoryProperties() {
     if (!slugValue) return {};
 
     const slugLower = slugValue.toLowerCase();
+    const catLower = String(categoryName || "").toLowerCase();
 
-    // Map slug to propertyType and subCategory
+    // For category-based routes (/buy/:slug, /rent/:slug, etc.),
+    // infer propertyType from category path
+    if (catLower === "buy" || catLower === "sale") {
+      // Slug could be specific property type or a subcategory
+      // Check if it's a known property type first
+      if (
+        ["residential", "plot", "commercial", "agricultural"].includes(
+          slugLower,
+        )
+      ) {
+        return { propertyType: slugLower };
+      }
+      // Otherwise, treat as a subcategory of residential (1bhk, 2bhk, etc.)
+      return { propertyType: "residential", subCategory: slugLower };
+    }
+
+    if (catLower === "rent" || catLower === "lease") {
+      // Rent/Lease usually shows residential properties with subcategories
+      if (["residential", "commercial"].includes(slugLower)) {
+        return { propertyType: slugLower };
+      }
+      return { propertyType: "residential", subCategory: slugLower };
+    }
+
+    if (catLower === "pg") {
+      return { propertyType: "pg", subCategory: slugLower };
+    }
+
+    if (catLower === "commercial") {
+      return { propertyType: "commercial", subCategory: slugLower };
+    }
+
+    if (catLower === "agricultural") {
+      return { propertyType: "agricultural", subCategory: slugLower };
+    }
+
+    // Fallback: Map slug to propertyType and subCategory for other cases
     // For BHK apartments and houses
     if (
       ["1bhk", "2bhk", "3bhk", "4bhk", "villa", "house", "flat"].includes(
@@ -205,12 +247,8 @@ export default function CategoryProperties() {
       return { propertyType: "agricultural" };
     }
 
-    // For PG
-    if (slugLower === "pg" || slugLower.includes("pg")) {
-      return { propertyType: "pg" };
-    }
-
-    // Fallback: treat slug as subCategory
+    // Last fallback: treat slug as subCategory for the inferred propertyType
+    // This handles dynamic subcategories that might not be hardcoded
     return { subCategory: slugLower };
   };
 

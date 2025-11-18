@@ -166,7 +166,7 @@ export default function Lease() {
   };
 
   const handleSubcategoryClick = (subcategory: Subcategory) => {
-    navigate(`/lease/${subcategory.slug}`);
+    navigate(`/lease/${subcategory.slug}?category=lease&priceType=lease`);
   };
 
   if (loading) {
