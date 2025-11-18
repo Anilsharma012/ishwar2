@@ -540,15 +540,36 @@ export const getUserProperties: RequestHandler = async (req, res) => {
 export const getUserNotifications: RequestHandler = async (req, res) => {
   try {
     const userId = (req as any).userId;
+    const userType = (req as any).userType;
     const db = getDatabase();
 
-    const notifications = await db
+    const userIdObj = new ObjectId(String(userId));
+
+    // Fetch user notifications
+    const userNotifications = await db
       .collection("user_notifications")
-      .find({ userId: new ObjectId(String(userId)) })
+      .find({ userId: userIdObj })
       .sort({ createdAt: -1 })
       .toArray();
 
-    res.json({ success: true, data: notifications });
+    // If seller/agent/admin, also fetch seller notifications
+    let sellerNotifications: any[] = [];
+    if (["seller", "agent", "admin"].includes(String(userType || ""))) {
+      sellerNotifications = await db
+        .collection("notifications")
+        .find({ sellerId: userIdObj })
+        .sort({ createdAt: -1 })
+        .toArray();
+    }
+
+    // Merge and sort by creation date
+    const allNotifications = [...userNotifications, ...sellerNotifications].sort(
+      (a, b) =>
+        new Date(b.createdAt || b.sentAt).getTime() -
+        new Date(a.createdAt || a.sentAt).getTime()
+    );
+
+    res.json({ success: true, data: allNotifications });
   } catch (error) {
     console.error("Error fetching user notifications:", error);
     res.status(500).json({ success: false, error: "Failed to fetch notifications" });
