@@ -7,8 +7,11 @@ interface UserNotification {
   _id: string;
   title: string;
   message: string;
-  createdAt: string;
+  createdAt?: string;
+  sentAt?: string;
   isRead?: boolean;
+  read?: boolean;
+  _notificationSource?: "user_notifications" | "notifications";
 }
 
 export default function Notifications() {
