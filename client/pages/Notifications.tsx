@@ -97,7 +97,7 @@ export default function Notifications() {
             {items.map((n) => (
               <div
                 key={n._id}
-                className={`bg-white border rounded-lg p-4 flex items-start justify-between ${n.isRead ? "" : "border-[#C70000]"}`}
+                className={`bg-white border rounded-lg p-4 flex items-start justify-between ${n.isRead || n.read ? "" : "border-[#C70000]"}`}
               >
                 <div>
                   <h3 className="font-medium text-gray-900">
