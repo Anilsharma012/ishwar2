@@ -109,9 +109,9 @@ export default function Notifications() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {!n.isRead && (
+                  {!n.isRead && !n.read && (
                     <button
-                      onClick={() => markRead(n._id)}
+                      onClick={() => markRead(n)}
                       className="p-2 rounded hover:bg-gray-100"
                       aria-label="Mark as read"
                     >
@@ -119,7 +119,7 @@ export default function Notifications() {
                     </button>
                   )}
                   <button
-                    onClick={() => remove(n._id)}
+                    onClick={() => remove(n)}
                     className="p-2 rounded hover:bg-gray-100"
                     aria-label="Delete"
                   >
