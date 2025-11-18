@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Property Category Fix - Test & Migrate</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+    .card p {
+      color: #666;
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .output {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      margin-top: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      color: #333;
+    }
+    .output.error {
+      background: #fee;
+      border-color: #fcc;
+      color: #c33;
+    }
+    .output.success {
+      background: #efe;
+      border-color: #cfc;
+      color: #3c3;
+    }
+    .status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .status.pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .token-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+    .info-box {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      color: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔧 Property Category Fix Tool</h1>
+      <p class="subtitle">Test, diagnose, and fix property category filtering issues</p>
+    </div>
+
+    <div class="grid">
+      <!-- TEST CARD -->
+      <div class="card">
+        <h2>🧪 Test Current State</h2>
+        <p>Run diagnostic tests to see the current state of properties in the database and identify any issues with category filtering.</p>
+        
+        <div class="info-box">
+          ℹ️ This will check: Property type distribution, PG/Co-living properties, Agricultural properties, pending items, and subcategory counts.
+        </div>
+
+        <button onclick="runTest()" id="testBtn">
+          <span id="testBtnContent">Run Test</span>
+        </button>
+        <div id="testOutput" class="output" style="display: none;"></div>
+        <span id="testStatus"></span>
+      </div>
+
+      <!-- FIX CARD -->
+      <div class="card">
+        <h2>🔨 Fix Property Types</h2>
+        <p>Normalize all existing properties to use canonical type values. This fixes properties that were created before the fix was implemented.</p>
+        
+        <div class="info-box">
+          ⚠️ This will permanently update the database. It normalizes: "co-living" → "pg", "agri" → "agricultural", etc.
+        </div>
+
+        <button onclick="runFix()" id="fixBtn">
+          <span id="fixBtnContent">Run Fix</span>
+        </button>
+        <div id="fixOutput" class="output" style="display: none;"></div>
+        <span id="fixStatus"></span>
+      </div>
+    </div>
+
+    <!-- INFO SECTION -->
+    <div class="card">
+      <h2>📋 What This Tool Does</h2>
+      <p><strong>Test:</strong> Checks property database for:</p>
+      <ul style="margin-left: 20px; margin-bottom: 15px; color: #666;">
+        <li>✅ Properties with propertyType="pg" (Co-living)</li>
+        <li>✅ Properties with propertyType="agricultural" (Farmland, Farmhouse, etc.)</li>
+        <li>✅ Legacy "co-living" values that need fixing</li>
+        <li>✅ Subcategory distribution for each type</li>
+        <li>✅ Count of pending/inactive properties</li>
+      </ul>
+
+      <p><strong>Fix:</strong> Updates the database to normalize property types using these mappings:</p>
+      <ul style="margin-left: 20px; color: #666;">
+        <li><code>"co-living"</code> → <code>"pg"</code></li>
+        <li><code>"coliving"</code> → <code>"pg"</code></li>
+        <li><code>"agricultural-land"</code> → <code>"agricultural"</code></li>
+        <li><code>"agri"</code> → <code>"agricultural"</code></li>
+        <li><code>"showroom"</code> → <code>"commercial"</code></li>
+        <li><code>"office"</code> → <code>"commercial"</code></li>
+        <li><code>"apartment"</code> → <code>"flat"</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    async function runTest() {
+      const btn = document.getElementById('testBtn');
+      const output = document.getElementById('testOutput');
+      const status = document.getElementById('testStatus');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span>Testing...';
+      output.style.display = 'block';
+      output.innerHTML = '🔄 Running tests...\n';
+      status.innerHTML = '<span class="status pending">Pending...</span>';
+
+      try {
+        // Get auth token from localStorage
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No auth token found. Please login first.');
+        }
+
+        const response = await fetch('/api/admin/test-property-categories', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        
+        // Format and display results
+        let resultText = '✅ TESTS COMPLETE\n\n';
+        const tests = data.data.tests;
+
+        resultText += '📊 PROPERTY TYPE DISTRIBUTION (Active & Approved):\n';
+        tests.propertyTypeDistribution.forEach(item => {
+          resultText += `  • ${item.type}: ${item.count} properties\n`;
+        });
+
+        resultText += '\n🏢 PG/CO-LIVING PROPERTIES:\n';
+        resultText += `  Total: ${tests.pgProperties.count}\n`;
+        tests.pgProperties.examples.forEach(p => {
+          resultText += `    - ${p.title} (${p.subCategory})\n`;
+        });
+
+        resultText += '\n🌾 AGRICULTURAL PROPERTIES:\n';
+        resultText += `  Total: ${tests.agricProperties.count}\n`;
+        tests.agricProperties.examples.forEach(p => {
+          resultText += `    - ${p.title} (${p.subCategory})\n`;
+        });
+
+        resultText += '\n⚠️  LEGACY VALUES (Should be 0):\n';
+        resultText += `  co-living: ${tests.colivingLegacy.count}\n`;
+        if (tests.colivingLegacy.count > 0) {
+          resultText += `  ⚠️ ${tests.colivingLegacy.warning}\n`;
+        }
+
+        resultText += '\n📋 SUBCATEGORY BREAKDOWN:\n';
+        resultText += '  PG Properties:\n';
+        tests.pgBySubcategory.forEach(item => {
+          resultText += `    - ${item.subcategory}: ${item.count}\n`;
+        });
+        resultText += '  Agricultural Properties:\n';
+        tests.agricBySubcategory.forEach(item => {
+          resultText += `    - ${item.subcategory}: ${item.count}\n`;
+        });
+
+        resultText += '\n⏳ PENDING PROPERTIES (Not yet visible):\n';
+        resultText += `  Total: ${tests.pending.count}\n`;
+        tests.pending.examples.slice(0, 3).forEach(p => {
+          resultText += `    - ${p.title} (status: ${p.status}, approval: ${p.approvalStatus})\n`;
+        });
+
+        output.innerHTML = resultText;
+        output.classList.add('success');
+        status.innerHTML = '<span class="status success">✅ Test completed successfully!</span>';
+      } catch (error) {
+        output.innerHTML = `❌ Error: ${error.message}`;
+        output.classList.add('error');
+        status.innerHTML = '<span class="status error">❌ Test failed</span>';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span id="testBtnContent">Run Test</span>';
+      }
+    }
+
+    async function runFix() {
+      const btn = document.getElementById('fixBtn');
+      const output = document.getElementById('fixOutput');
+      const status = document.getElementById('fixStatus');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="loading"></span>Fixing...';
+      output.style.display = 'block';
+      output.innerHTML = '🔄 Running migration...\n';
+      status.innerHTML = '<span class="status pending">Pending...</span>';
+
+      try {
+        // Get auth token from localStorage
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+          throw new Error('No auth token found. Please login first.');
+        }
+
+        const response = await fetch('/api/admin/fix-property-categories', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`API Error: ${response.status} - ${errorData.error || 'Unknown error'}`);
+        }
+
+        const data = await response.json();
+        
+        // Format and display results
+        let resultText = '✅ MIGRATION COMPLETE\n\n';
+        resultText += `📊 Total properties: ${data.data.totalProperties}\n`;
+        resultText += `🔧 Fixed properties: ${data.data.fixedCount}\n\n`;
+
+        if (data.data.fixedCount === 0) {
+          resultText += '✅ All properties already normalized!\n';
+        } else {
+          resultText += '📋 Sample of fixed properties:\n';
+          data.data.fixes.slice(0, 10).forEach(fix => {
+            resultText += `  • "${fix.title}": "${fix.from}" → "${fix.to}"\n`;
+          });
+          if (data.data.totalFixes > 10) {
+            resultText += `\n... and ${data.data.totalFixes - 10} more\n`;
+          }
+        }
+
+        resultText += `\n✨ Message: ${data.data.message}`;
+
+        output.innerHTML = resultText;
+        output.classList.add('success');
+        status.innerHTML = '<span class="status success">✅ Fix completed successfully!</span>';
+      } catch (error) {
+        output.innerHTML = `❌ Error: ${error.message}`;
+        output.classList.add('error');
+        status.innerHTML = '<span class="status error">❌ Fix failed</span>';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span id="fixBtnContent">Run Fix</span>';
+      }
+    }
+
+    // Check for auth token on page load
+    window.addEventListener('load', () => {
+      const token = localStorage.getItem('authToken');
+      if (!token) {
+        console.warn('⚠️ No auth token found. Make sure you are logged in as admin.');
+      }
+    });
+  </script>
+</body>
+</html>
