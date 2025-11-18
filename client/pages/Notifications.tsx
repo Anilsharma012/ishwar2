@@ -105,7 +105,7 @@ export default function Notifications() {
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">{n.message}</p>
                   <div className="text-xs text-gray-400 mt-2">
-                    {new Date(n.createdAt).toLocaleString()}
+                    {new Date(n.createdAt || n.sentAt || "").toLocaleString()}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
