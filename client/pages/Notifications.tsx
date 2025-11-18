@@ -43,27 +43,37 @@ export default function Notifications() {
     fetchNotifications();
   }, []);
 
-  const markRead = async (id: string) => {
+  const markRead = async (notif: UserNotification) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/user/notifications/${id}/read`, {
+      const isSellerNotif = notif._notificationSource === "notifications";
+      const endpoint = isSellerNotif
+        ? `/api/seller/notifications/${notif._id}/read`
+        : `/api/user/notifications/${notif._id}/read`;
+
+      await fetch(endpoint, {
         method: "PUT",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       setItems((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
+        prev.map((n) => (n._id === notif._id ? { ...n, isRead: true, read: true } : n)),
       );
     } catch {}
   };
 
-  const remove = async (id: string) => {
+  const remove = async (notif: UserNotification) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/user/notifications/${id}`, {
+      const isSellerNotif = notif._notificationSource === "notifications";
+      const endpoint = isSellerNotif
+        ? `/api/seller/notifications/${notif._id}`
+        : `/api/user/notifications/${notif._id}`;
+
+      await fetch(endpoint, {
         method: "DELETE",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
-      setItems((prev) => prev.filter((n) => n._id !== id));
+      setItems((prev) => prev.filter((n) => n._id !== notif._id));
     } catch {}
   };
 
