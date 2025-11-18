@@ -200,6 +200,25 @@ export const getCategoryBySlug: RequestHandler = async (req, res) => {
             { name: "Co-living Spaces", slug: "co-living-spaces" },
           ],
         },
+        agricultural: {
+          name: "Agricultural",
+          slug: "agricultural",
+          description: "Agricultural properties - farmland, orchards and more",
+          propertyTypes: ["agricultural"],
+          sortOrder: 4,
+          active: true,
+          isActive: true,
+          subcategories: [
+            { name: "Agricultural Land", slug: "agricultural-land", description: "Farmland and agricultural plots" },
+            { name: "Farmhouse with Land", slug: "farmhouse-with-land", description: "Farmhouse with land" },
+            { name: "Orchard/Plantation", slug: "orchard-plantation", description: "Orchard and plantation land" },
+            { name: "Dairy Farm", slug: "dairy-farm", description: "Dairy farming land" },
+            { name: "Poultry Farm", slug: "poultry-farm", description: "Poultry farming land" },
+            { name: "Fish/Prawn Farm", slug: "fish-farm-pond", description: "Fish and prawn farming ponds" },
+            { name: "Polyhouse/Greenhouse", slug: "polyhouse-greenhouse", description: "Polyhouse and greenhouse structures" },
+            { name: "Pasture/Grazing Land", slug: "pasture-grazing", description: "Pasture and grazing land" },
+          ],
+        },
       };
 
       if (knownCategories[slug]) {
