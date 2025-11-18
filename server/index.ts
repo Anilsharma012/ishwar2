@@ -200,7 +200,11 @@ import {
 import { handleDemo } from "./routes/demo";
 import { seedDatabase } from "./routes/seed";
 import { replyAsOwner } from "./routes/dev-chat";
-import { initializeSystem, debugCategories, reinitializeCategories } from "./routes/init";
+import {
+  initializeSystem,
+  debugCategories,
+  reinitializeCategories,
+} from "./routes/init";
 import {
   getAdminSettings,
   updateAdminSettings,

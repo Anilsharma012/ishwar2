@@ -4,26 +4,26 @@ import { getDatabase } from "../db/mongodb";
 const TYPE_ALIASES: Record<string, string> = {
   // PG / Co-living
   "co-living": "pg",
-  "coliving": "pg",
-  "pg": "pg",
+  coliving: "pg",
+  pg: "pg",
 
   // Agricultural
   "agricultural-land": "agricultural",
-  "agri": "agricultural",
-  "agricultural": "agricultural",
+  agri: "agricultural",
+  agricultural: "agricultural",
 
   // Commercial family
-  "commercial": "commercial",
-  "showroom": "commercial",
-  "office": "commercial",
+  commercial: "commercial",
+  showroom: "commercial",
+  office: "commercial",
 
   // Residential family
-  "residential": "residential",
-  "flat": "flat",
-  "apartment": "flat",
+  residential: "residential",
+  flat: "flat",
+  apartment: "flat",
 
   // Plot
-  "plot": "plot",
+  plot: "plot",
 };
 
 /**
@@ -52,7 +52,9 @@ export const testPropertyCategories: RequestHandler = async (req, res) => {
     console.log(`Found: ${pgProperties.length} properties`);
 
     // Test 2: Check for co-living properties (should be normalized to pg)
-    console.log("\n📋 TEST 2: Properties with propertyType='co-living' (legacy)");
+    console.log(
+      "\n📋 TEST 2: Properties with propertyType='co-living' (legacy)",
+    );
     const colivingLegacy = await propertiesCollection
       .find({
         propertyType: "co-living",
@@ -234,7 +236,9 @@ export const fixPropertyCategories: RequestHandler = async (req, res) => {
 
     for (const property of allProperties) {
       const originalPropertyType = property.propertyType;
-      let normalizedPropertyType = (originalPropertyType || "").trim().toLowerCase();
+      let normalizedPropertyType = (originalPropertyType || "")
+        .trim()
+        .toLowerCase();
 
       // Check if this propertyType needs to be normalized
       if (TYPE_ALIASES[normalizedPropertyType]) {
@@ -251,7 +255,7 @@ export const fixPropertyCategories: RequestHandler = async (req, res) => {
           // Update the property
           await propertiesCollection.updateOne(
             { _id: property._id },
-            { $set: { propertyType: newPropertyType } }
+            { $set: { propertyType: newPropertyType } },
           );
 
           fixedCount++;
