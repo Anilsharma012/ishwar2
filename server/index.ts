@@ -891,6 +891,20 @@ export function createServer() {
     updatePropertyApproval,
   );
 
+  // Property category testing and fixing routes
+  app.get(
+    "/api/admin/test-property-categories",
+    authenticateToken,
+    requireAdmin,
+    testPropertyCategories,
+  );
+  app.post(
+    "/api/admin/fix-property-categories",
+    authenticateToken,
+    requireAdmin,
+    fixPropertyCategories,
+  );
+
   // PUBLIC Category routes
   app.get("/api/categories", getCategories); // ?active=true&withSub=true
   app.get("/api/categories/:slug", getCategoryBySlug);
