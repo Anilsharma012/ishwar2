@@ -413,6 +413,9 @@ export const createProperty: RequestHandler = async (req, res) => {
     };
 
     console.log("📥 CREATE PROPERTY → enforced", {
+      title: propertyData.title,
+      propertyType: propertyData.propertyType,
+      subCategory: propertyData.subCategory,
       status: propertyData.status,
       approvalStatus: propertyData.approvalStatus,
       isApproved: propertyData.isApproved,
